@@ -16,6 +16,7 @@ fetch('https://randomuser.me/api/?results=12&nat=us')
 const searchHTML = `
     <form action="#" method="get">
     <input type="search" id="search-input" class="search-input" placeholder="Search...">
+    <input type="submit" value="&#x1F50D;" id="search-submit" class="search-submit">
     </form>
 `;
 search.html(searchHTML);
@@ -148,4 +149,22 @@ $('body').on('keyup', '#search-input', function(){
         } 
     }  
 });
+
+$('body').on('click', '#search-submit', function(){
+    let input = $('#search-input').val().trim().toLowerCase();
+    for (let i = 0; i < employeeArray.length; i++) {
+        let name = employeeArray[i].firstName.toLowerCase() + ' ' + employeeArray[i].lastName.toLowerCase();
+        let NameController = name.includes(input);
+        if(NameController) {
+            gallery.children().eq(i).show();
+        } else {
+            gallery.children().eq(i).hide();
+        } 
+    }  
+    console.log(input);
+});
+
+
+
+
 
