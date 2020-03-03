@@ -1,30 +1,35 @@
-// Variables
+/* Andrea Vannetti FSJS Techdegree
+ * Project 5 - Public API Requests
+ * scripts.js */
 
+// Variables
 const gallery = $('#gallery');
 const search = $('.search-container');
-
-
-fetch('https://randomuser.me/api/?results=12&nat=us')
-    .then(response => response.json())
-    .then(data => {
-        console.log(data.results);
-        createArray(data.results);
-        generateHTML(data.results);
-    });
-
-
+const employeeArray = [];
 const searchHTML = `
     <form action="#" method="get">
     <input type="search" id="search-input" class="search-input" placeholder="Search...">
     <input type="submit" value="&#x1F50D;" id="search-submit" class="search-submit">
     </form>
 `;
+
+
+// Create the HTML for the search input field
 search.html(searchHTML);
 
-// Create Employee Array
 
-const employeeArray = [];
-function createArray(data) {
+// Send a request to the API site
+fetch('https://randomuser.me/api/?results=12&nat=us')
+    .then(response => response.json())
+    .then(data => {
+        // Use the response to create an array of employee, and generate HTML for each employee
+        createArray(data.results);
+        generateHTML(data.results);
+    });
+
+
+// Create an array for storing all the needed information about each employee, retrieved from the response
+const createArray = data => {
     data.forEach(element => {
        employeeArray.push({
            'image': element.picture.large,
@@ -40,12 +45,13 @@ function createArray(data) {
            'birthdate': element.dob.date.slice(0, 10)
        }); 
     });
-    return employeeArray;
-}
+};
 
-// Create HTML
+
+// Create the card for each employee
 let html = "";
-function generateHTML (arr){
+const generateHTML = arr => {
+    // Loop over the array of employees
     for(let i = 0; i < arr.length; i++) {
         html += '<div class="card">';
         html += '<div class="card-img-container">'
@@ -58,14 +64,18 @@ function generateHTML (arr){
         html += '</div>';
         html += '</div>';
     }
+    // Set the HTML of #gallery div
     gallery.html(html);
 }
 
-// Create modal
+
+// Create the modal window for the selected employee
 let modalHTML = "";
-function generateModalHTML(index) {
+const generateModalHTML = index => {
     const modalContainer = document.createElement('DIV');
+    // Add the class .modal-container
     modalContainer.classList.add('modal-container');
+    // Create the HTML
     modalHTML += '<div class="modal">';
     modalHTML += '<button type="button" id="modal-close-btn" class="modal-close-btn"><strong>X</strong></button>';
     modalHTML += '<div class="modal-info-container">';
@@ -80,12 +90,17 @@ function generateModalHTML(index) {
     modalHTML += '</div>';
     modalHTML += '</div>';
     modalHTML += '<div class="modal-btn-container">';
+    // If is the first employee in the list
     if(index === 0) {
+        // Disable the Prev button
         modalHTML += '<button type="button" id="modal-prev" class="modal-prev btn" disabled>Prev</button>';
         modalHTML += '<button type="button" id="modal-next" class="modal-next btn">Next</button>';
+    // If is the last employee in the list
     } else if (index === 11) {
+        // Disable the Next button
         modalHTML += '<button type="button" id="modal-prev" class="modal-prev btn">Prev</button>';
         modalHTML += '<button type="button" id="modal-next" class="modal-next btn" disabled>Next</button>';
+    // Else enable both buttons
     } else {
         modalHTML += '<button type="button" id="modal-prev" class="modal-prev btn">Prev</button>';
         modalHTML += '<button type="button" id="modal-next" class="modal-next btn">Next</button>';
@@ -95,39 +110,61 @@ function generateModalHTML(index) {
     gallery.after(modalContainer);
 }
 
-// Create Modal 
+
+// User Input Search function
+const searchEmployee = () => {
+    // Take the user input
+    let input = $('#search-input').val().trim().toLowerCase();
+    // Loop over the array searching for matches
+    for (let i = 0; i < employeeArray.length; i++) {
+        // Takes the name of each employees
+        let name = employeeArray[i].firstName.toLowerCase() + ' ' + employeeArray[i].lastName.toLowerCase();
+        let NameController = name.includes(input);
+        // If the name includes the search show it
+        if(NameController) {
+            gallery.children().eq(i).show();
+        } else {
+            gallery.children().eq(i).hide();
+        } 
+    }; 
+};
+
+
+// Add the click event listener to each card for open the modal
 let index;
-$('document').ready(function() {
-    $('#gallery').on('click', '.card', function(){
+$('document').ready(() => {
+    $('#gallery').on('click', '.card', function () {
+        // Get the index of the clicked card
         index = $(this).index();
+        // Generate the modal for the clicked card using the index
         generateModalHTML(index);
         $('#modal-container').css('display', 'block');
-        console.log(index);
-        return index;
     });
 });
 
 
-// Exit Modal 
-
-$('document').ready(function() {
-    $('body').on('click', '#modal-close-btn', function() {
+// Add the Event listener to Exit Modal button 
+$('document').ready(() => {
+    $('body').on('click', '#modal-close-btn', function () {
+        // Reset all the modal HTML
         modalHTML = "";
+        // Remove the modal container
         $('.modal-container').remove();
-        $('.modal-container').css('display', 'none');
     });
 });
 
 
-// Modal Arrow 
-
-$('document').ready(function() {
+// Add the Event Listener to Prev and Next button 
+$('document').ready(() => {
     $('body').on('click', '.btn', function() {
+        // If the 'Prev' button is clicked decreases index by 1
         if($(this).text() === 'Prev') {
             index -= 1;
+        // If the 'Next' button is clicked increases index by 1
         } else if($(this).text() === 'Next') {
             index += 1;
         }
+        // Reset the modal and create a new one for the Prev or Next employee
         modalHTML = "";
         $('.modal-container').remove();
         generateModalHTML(index);
@@ -135,34 +172,18 @@ $('document').ready(function() {
 });
 
 
-// Search Filter
-
-$('body').on('keyup', '#search-input', function(){
-    let input = $('#search-input').val().trim().toLowerCase();
-    for (let i = 0; i < employeeArray.length; i++) {
-        let name = employeeArray[i].firstName.toLowerCase() + ' ' + employeeArray[i].lastName.toLowerCase();
-        let NameController = name.includes(input);
-        if(NameController) {
-            gallery.children().eq(i).show();
-        } else {
-            gallery.children().eq(i).hide();
-        } 
-    }  
+// Add the keyup Event Listener for real time search
+$('body').on('keyup', '#search-input', () => {
+    searchEmployee();
 });
 
-$('body').on('click', '#search-submit', function(){
-    let input = $('#search-input').val().trim().toLowerCase();
-    for (let i = 0; i < employeeArray.length; i++) {
-        let name = employeeArray[i].firstName.toLowerCase() + ' ' + employeeArray[i].lastName.toLowerCase();
-        let NameController = name.includes(input);
-        if(NameController) {
-            gallery.children().eq(i).show();
-        } else {
-            gallery.children().eq(i).hide();
-        } 
-    }  
-    console.log(input);
+
+// Add the click Event Listener for search
+$('body').on('click', '#search-submit', () => {
+    searchEmployee();
 });
+
+
 
 
 
